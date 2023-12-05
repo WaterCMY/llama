@@ -9,7 +9,8 @@ from dataclasses import dataclass
 from llama.tokenizer import Tokenizer
 from llama.model import ModelArgs, Llama
 from torch.cuda.amp import autocast, GradScaler
-
+import os
+import psutil
 IGNORE_INDEX = -100
 
 PROMPT_DICT = {
@@ -198,3 +199,9 @@ def train():
 
 if __name__ == "__main__":
     train()
+
+
+    process = psutil.Process(os.getpid())
+    memory_info = process.memory_info()
+    memory_usage_mb = memory_info.rss / (1024 * 1024)  # rss代表常驻集大小
+    print(f"Final memory usage for training the model: {memory_usage_mb:.2f} MB")
