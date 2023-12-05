@@ -113,12 +113,12 @@ def train():
 
     model_path = "/home1/ichuncha/llama/llama2-7b/consolidated.00.pth"
     tokenizer_path = "/home1/ichuncha/llama/llama2-7b/tokenizer.model"
-    data_path = "/home1/ichuncha/llama/alpaca_data_dummy.json"
+    data_path = "/home1/ichuncha/llama/alpaca_data_200.json"
 
     # load model
     checkpoint = torch.load(model_path, map_location="cpu")
     model_args = ModelArgs()
-    model_args.n_layers = 1  # for debugging purposes we only use 1 layer
+    model_args.n_layers = 32  # for debugging purposes we only use 1 layer
     # torch.set_default_tensor_type(torch.cuda.HalfTensor) # for training we use fp32 weights
     model = Llama(model_args)
     model.load_state_dict(checkpoint, strict=False)
@@ -185,6 +185,15 @@ def train():
                 optimizer.zero_grad()
 
             print(f"epoch: {epoch}, loss: ", loss.item() * accumulation_steps) # scale loss back for reporting
+    model_params = {attr: getattr(model.params, attr) for attr in dir(model.params) if not attr.startswith('_')}
+    params_save_path = "./weight/params.json"
+    with open(params_save_path, 'w') as params_file:
+        json.dump(model_params, params_file)
+        
+    # save model
+    final_save_path = "./weight/1.pth"
+    torch.save(model.state_dict(), final_save_path)
+    print(f"Final model saved to {final_save_path}")
 
 
 if __name__ == "__main__":
